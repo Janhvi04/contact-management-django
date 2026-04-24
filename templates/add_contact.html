@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}
+New Contact
+{% endblock title %}
+
+{% block content %}
+<h3 class="h3 text-center page-title mb-4">New Contact</h3>
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+  <strong>{{message}}</strong>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endblock content %}
+
+{% block body %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9 col-xl-8">
+  <div id="addContactClientAlert"></div>
+  <form method="post" class="needs-validation" novalidate id="addContactForm">
+    {% csrf_token %}
+  <div class="row mb-3 align-items-center">
+    <label for="inputFirstName" class="col-sm-4 col-md-3 col-form-label fw-semibold">First Name:</label>
+    <div class="col-sm-8 col-md-9">
+      <input type="text" class="form-control" id="inputFirstName" name="first_name" placeholder="Enter Your First Name" required>
+      <div class="invalid-feedback">First name is required.</div>
+    </div>
+  </div>
+  <div class="row mb-3 align-items-center">
+    <label for="inputLastName" class="col-sm-4 col-md-3 col-form-label fw-semibold">Last Name:</label>
+    <div class="col-sm-8 col-md-9">
+      <input type="text" class="form-control" id="inputLastName" name="last_name" placeholder="Enter Your Last Name" required>
+      <div class="invalid-feedback">Last name is required.</div>
+    </div>
+  </div>
+  <div class="row mb-3 align-items-center">
+    <label for="inputAddress" class="col-sm-4 col-md-3 col-form-label fw-semibold">Address</label>
+    <div class="col-sm-8 col-md-9">
+      <textarea class="form-control" id="inputAddress" name="address" placeholder="Enter Your Address" rows="3" required></textarea>
+      <div class="invalid-feedback">Address is required.</div>
+    </div>
+  </div>
+  <div class="row mb-3 align-items-center">
+    <label for="exampleInputEmail1" class="col-sm-4 col-md-3 col-form-label fw-semibold">Email:</label>
+    <div class="col-sm-8 col-md-9">
+      <input type="email" class="form-control" id="exampleInputEmail1" name="email" placeholder="Enter Your Email " required pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$">
+      <div class="invalid-feedback">Please enter a valid email address.</div>
+    </div>
+  </div>
+  <div class="row mb-4 align-items-center">
+    <label for="inputPhoneNo" class="col-sm-4 col-md-3 col-form-label fw-semibold">Phone Number:</label>
+    <div class="col-sm-8 col-md-9">
+      <input type="text" class="form-control" id="inputPhoneNo" name="phone_no" placeholder="Enter Your Phone Number" required pattern="^\d{10,15}$" inputmode="numeric">
+      <div class="invalid-feedback">Phone number must contain 10 to 15 digits only.</div>
+    </div>
+  </div>
+  <div class="d-grid d-sm-flex justify-content-sm-end gap-2">
+    <button type="submit" class="btn btn-success btn-interactive px-4" data-loading-text="Saving...">Save</button>
+  </div>
+</form>
+  </div>
+</div>
+{% endblock body %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const form = document.getElementById('addContactForm');
+    if (!form) return;
+
+    const alertContainer = document.getElementById('addContactClientAlert');
+    const phoneInput = form.querySelector('input[name="phone_no"]');
+
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '');
+      });
+    }
+
+    form.addEventListener('submit', function (event) {
+      const submitButton = form.querySelector('button[type="submit"]');
+      const emailInput = form.querySelector('input[name="email"]');
+      let isValid = true;
+
+      if (phoneInput && !/^\d{10,15}$/.test(phoneInput.value.trim())) {
+        phoneInput.setCustomValidity('Phone number must contain 10 to 15 digits only.');
+        isValid = false;
+      } else if (phoneInput) {
+        phoneInput.setCustomValidity('');
+      }
+
+      if (emailInput && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+        emailInput.setCustomValidity('Please enter a valid email address.');
+        isValid = false;
+      } else if (emailInput) {
+        emailInput.setCustomValidity('');
+      }
+
+      if (!form.checkValidity() || !isValid) {
+        event.preventDefault();
+        event.stopPropagation();
+        form.classList.add('was-validated');
+        if (alertContainer) {
+          alertContainer.innerHTML = '<div class="alert alert-danger alert-dismissible fade show" role="alert">Please fix the highlighted fields and try again.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+        }
+        return;
+      }
+
+      if (alertContainer) {
+        alertContainer.innerHTML = '<div class="alert alert-success alert-dismissible fade show" role="alert">Validation passed. Submitting contact details...<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+      }
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.dataset.originalText = submitButton.textContent.trim();
+        submitButton.textContent = submitButton.dataset.loadingText || 'Saving...';
+      }
+    });
+  })();
+</script>
+{% endblock extra_js %}

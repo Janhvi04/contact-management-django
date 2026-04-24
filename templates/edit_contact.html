@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}
+Edit Contact
+{% endblock title %}
+
+
+{% block content %}
+<h3 class="h3 text-center page-title mb-4">Edit Contact</h3>
+{% endblock content %}
+
+
+{% block body %}
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-8">
+        <div class="edit-form-wrapper">
+          <div id="editContactClientAlert"></div>
+    <form method="post" class="needs-validation" novalidate id="editContactForm">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="d-grid d-sm-flex justify-content-sm-end">
+          <button type="submit" class="btn btn-warning text-dark btn-interactive px-4" data-loading-text="Updating...">Update</button>
+        </div>
+    </form>
+        </div>
+      </div>
+    </div>
+{% endblock body %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const form = document.getElementById('editContactForm');
+    if (!form) return;
+
+    const alertContainer = document.getElementById('editContactClientAlert');
+    const emailInput = form.querySelector('input[name="email"]');
+    const phoneInput = form.querySelector('input[name="phone_no"]');
+
+    function appendFeedback(field, message) {
+      const feedback = document.createElement('div');
+      feedback.className = 'invalid-feedback';
+      feedback.textContent = message;
+      if (field.parentElement) {
+        field.parentElement.appendChild(feedback);
+      }
+    }
+
+    Array.from(form.querySelectorAll('input, textarea, select')).forEach(function (field) {
+      if (field.type === 'hidden' || field.type === 'submit' || field.type === 'button') return;
+      field.classList.add('form-control');
+      if (field.required && !field.parentElement.querySelector('.invalid-feedback')) {
+        appendFeedback(field, 'This field is required.');
+      }
+    });
+
+    if (emailInput) {
+      emailInput.setAttribute('pattern', '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+      if (!emailInput.parentElement.querySelector('.invalid-feedback')) {
+        appendFeedback(emailInput, 'Please enter a valid email address.');
+      }
+    }
+
+    if (phoneInput) {
+      phoneInput.setAttribute('pattern', '^\\d{10,15}$');
+      phoneInput.setAttribute('inputmode', 'numeric');
+      if (!phoneInput.parentElement.querySelector('.invalid-feedback')) {
+        appendFeedback(phoneInput, 'Phone number must contain 10 to 15 digits only.');
+      }
+      phoneInput.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '');
+      });
+    }
+
+    form.addEventListener('submit', function (event) {
+      const submitButton = form.querySelector('button[type="submit"]');
+      let isValid = true;
+
+      if (emailInput && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+        emailInput.setCustomValidity('Please enter a valid email address.');
+        isValid = false;
+      } else if (emailInput) {
+        emailInput.setCustomValidity('');
+      }
+
+      if (phoneInput && !/^\d{10,15}$/.test(phoneInput.value.trim())) {
+        phoneInput.setCustomValidity('Phone number must contain 10 to 15 digits only.');
+        isValid = false;
+      } else if (phoneInput) {
+        phoneInput.setCustomValidity('');
+      }
+
+      if (!form.checkValidity() || !isValid) {
+        event.preventDefault();
+        event.stopPropagation();
+        form.classList.add('was-validated');
+        if (alertContainer) {
+          alertContainer.innerHTML = '<div class="alert alert-danger alert-dismissible fade show" role="alert">Please correct the highlighted fields before updating.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+        }
+        return;
+      }
+
+      if (alertContainer) {
+        alertContainer.innerHTML = '<div class="alert alert-success alert-dismissible fade show" role="alert">Validation passed. Updating contact...<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+      }
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.dataset.originalText = submitButton.textContent.trim();
+        submitButton.textContent = submitButton.dataset.loadingText || 'Updating...';
+      }
+    });
+  })();
+</script>
+{% endblock extra_js %}

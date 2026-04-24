@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}
+View Contact
+{% endblock title %}
+
+
+{% block content %}
+<h3 class="h3 text-center page-title mb-4">View Contact</h3>
+{% endblock content %}
+
+{% block body %}
+{%if record %}
+<div class="table-responsive">
+  <table class="table table-striped table-bordered table-hover align-middle mb-0">
+    <thead class="table-dark">
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">First Name</th>
+        <th scope="col">Last Name</th>
+        <th scope="col">Address</th>
+        <th scope="col">Email</th>
+        <th scope="col">Phone Number</th>
+        <th scope="col" class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rec in record %}
+      <tr>
+        <th scope="row">{{ rec.id }}</th>
+        <td>{{ rec.first_name }}</td>
+        <td>{{ rec.last_name }}</td>
+        <td>{{ rec.address }}</td>
+        <td>{{ rec.email }}</td>
+        <td>{{ rec.phone_no }}</td>
+        <td class="text-center">
+          <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+            <a href="{% url 'update_contact' rec.id %}" class="btn btn-warning btn-sm text-dark btn-interactive">Update</a>
+            <form action="{% url 'delete_contact' rec.id %}" method="post" class="d-inline delete-contact-form">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm btn-interactive" data-loading-text="Deleting...">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{%else%}
+<div class="text-center py-5">
+  <h4 class="text-secondary">No record found</h4>
+</div>
+{% endif %}
+{% endblock body %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const deleteForms = document.querySelectorAll('.delete-contact-form');
+    deleteForms.forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        const confirmed = window.confirm('Are you sure you want to delete this contact? This action cannot be undone.');
+        if (!confirmed) {
+          event.preventDefault();
+          return;
+        }
+
+        const deleteButton = form.querySelector('button[type="submit"]');
+        if (deleteButton) {
+          deleteButton.disabled = true;
+          deleteButton.dataset.originalText = deleteButton.textContent.trim();
+          deleteButton.textContent = deleteButton.dataset.loadingText || 'Deleting...';
+        }
+      });
+    });
+  })();
+</script>
+{% endblock extra_js %}
