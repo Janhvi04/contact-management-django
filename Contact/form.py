@@ -8,6 +8,6 @@ class Contactform(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if Contact.objects.filter(email=email).exists():
+        if Contact.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("Email already exists")
         return email
